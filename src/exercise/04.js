@@ -2,7 +2,7 @@
 // http://localhost:3000/isolated/exercise/04.js
 
 import * as React from 'react'
-import {useLocalStorageState} from "../utils";
+import { useLocalStorageState } from "../utils";
 
 function Board({onClick, squares}) {
 
@@ -35,26 +35,29 @@ function Board({onClick, squares}) {
   )
 }
 
+const History = ({historyIndex, handleMoveInHistory, step}) => (
+    <li key={historyIndex}>
+        <button onClick={() => handleMoveInHistory(historyIndex)}>
+            {step === historyIndex + 1
+                ? `Go to move ${historyIndex + 1} (Current)`
+                : `Go to move ${historyIndex + 1}`}
+        </button>
+    </li>)
+
 function Game() {
     const defaultSquares = Array(9).fill(null)
     const [squares, setSquares] = useLocalStorageState("squares", defaultSquares)
     const [history, setHistory] = useLocalStorageState("history", [])
     const [step, setStep] = useLocalStorageState("step", 0)
+
     const nextValue = calculateNextValue(squares)
     const winner = calculateWinner(squares)
     const status = calculateStatus(winner, squares, nextValue)
 
-    const moves = history.map((stepHistory, index) => (
-        <li key={index}>
-            <button onClick={() => handleMoveInHistory(index)}>
-                {step === index ? `Go to move ${index + 1} (Current)` : `Go to move ${index + 1}`}
-            </button>
-        </li>)
-    )
+    const moves = history.map((_, historyIndex) => <History key={historyIndex} historyIndex={historyIndex} handleMoveInHistory={handleMoveInHistory} step={step}/>)
 
     function handleMoveInHistory(historyIndex) {
-        setStep(historyIndex)
-        // setHistory(history.slice(0,historyIndex+1))
+        setStep(historyIndex + 1)
         setSquares(history[historyIndex])
     }
 
@@ -75,9 +78,7 @@ function Game() {
         const squaresCopy = [...squares]
         squaresCopy[squareIndex] = nextValue
         setSquares(squaresCopy)
-        console.log("squaresCopy", squaresCopy)
-        setHistory([...history.slice(0, step + 1), squaresCopy])
-        console.log("history", history)
+        setHistory([...history.slice(0, step), squaresCopy])
         setStep(step + 1)
     }
 
